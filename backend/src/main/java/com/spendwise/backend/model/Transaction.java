@@ -3,6 +3,9 @@ package com.spendwise.backend.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,13 +17,26 @@ public class Transaction {
     private String id;
 
     private String userId;
-    private String type;       // INCOME or EXPENSE
+
+    @NotBlank(message = "Type is required")
+    private String type;
+
+    @NotNull(message = "Amount is required")
+    @DecimalMin(
+        value = "0.0",
+        inclusive = false,
+        message = "Amount must be greater than zero"
+    )
     private BigDecimal amount;
+
+    @NotBlank(message = "Category is required")
     private String category;
+
     private String description;
+
+    @NotNull(message = "Date is required")
     private LocalDate date;
 
-    
     public Transaction() {
     }
 
@@ -41,6 +57,10 @@ public class Transaction {
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getUserId() {
@@ -91,4 +111,3 @@ public class Transaction {
         this.date = date;
     }
 }
-

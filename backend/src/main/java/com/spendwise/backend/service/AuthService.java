@@ -3,19 +3,24 @@ package com.spendwise.backend.service;
 
 import com.spendwise.backend.model.User;
 import com.spendwise.backend.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
-    }
+    public AuthService(
+        UserRepository userRepository,
+        PasswordEncoder passwordEncoder,
+        JwtService jwtService) {
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+    this.jwtService = jwtService;
+}
 
     public User register(String name, String email, String password) {
         if (name == null || name.isBlank()) {
@@ -46,4 +51,26 @@ public class AuthService {
 
         return userRepository.save(user);
     }
+    
+public User login(String email, String password) {
+    if (email == null || email.isBlank()
+            || password == null || password.isBlank()) {
+        throw new IllegalArgumentException(
+                "Email and password are required");
+    }
+
+    String normalizedEmail = email.trim().toLowerCase();
+
+    User user = userRepository.findByEmail(normalizedEmail)
+            .orElseThrow(() -> new IllegalArgumentException(
+                    "Invalid email or password"));
+
+    if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+        throw new IllegalArgumentException(
+                "Invalid email or password");
+    }
+
+    return user;
+}
+
 }
